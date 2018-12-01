@@ -3,7 +3,7 @@ var {User} = require('../server/models/user');
 require('../server/db/mongoose')
 
 var user = new User({
-    phone: '+380933886233'
+    phone: '+380930000000'
 });
 
 user.save().then((doc) => {
