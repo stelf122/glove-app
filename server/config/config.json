@@ -1,0 +1,12 @@
+{
+    "test": {
+        "PORT": 3000,
+        "MONGODB_URI": "mongodb://localhost:27017/GloveAppTest",
+        "JWT_SECRET": "gdgf;jgfdgjfdhgdfkj"
+    },
+    "development": {
+        "PORT": 3000,
+        "MONGODB_URI": "mongodb://localhost:27017/GloveApp",
+        "JWT_SECRET": "pogo2pjo41pergrjpoj1"
+    }
+}
