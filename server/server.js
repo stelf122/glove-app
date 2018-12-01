@@ -1,6 +1,9 @@
 require('./config/config');
 
-const app = require('express')();
+const path = require('path');
+const express = require('express');
+
+var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
@@ -8,6 +11,10 @@ var mongoose = require('./db/mongoose');
 var {User} = require('./models/user');
 
 const port = process.env.PORT || 3000;
+
+const publicPath = path.join(__dirname, '../public');
+
+app.use(express.static(publicPath));
 
 io.on('connection', function(socket) {
     console.log('User connected');
@@ -17,7 +24,7 @@ io.on('connection', function(socket) {
     });
 
     socket.on('join', (params, callback) => {
-        
+
         User.findOne(params).then((user) => {
             if (!user) {
                 var user = new User(params);
