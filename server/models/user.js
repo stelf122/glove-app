@@ -12,6 +12,36 @@ var UserSchema = new mongoose.Schema({
             validator: validator.isMobilePhone,
             message: '{VALUE} is not a valid value'
         }
+    },
+    arrows: {
+        required: false,
+        default: 0,
+        type: Number
+    },
+    playTime: {
+        required: false,
+        default: 0,
+        type: Number
+    },
+    wins: {
+        required: false,
+        default: 0,
+        type: Number
+    },
+    defeats: {
+        required: false,
+        default: 0,
+        type: Number
+    },
+    sendDuel: {
+        required: false,
+        default: 0,
+        type: Number
+    },
+    dropDuel: {
+        required: false,
+        default: 0,
+        type: Number
     }
 });
 

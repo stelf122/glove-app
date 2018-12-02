@@ -42,6 +42,8 @@ io.on('connection', function(socket) {
                 });
             } else {
                 callback('ok');
+
+                socket.emit('updateStat', user);
             }
         }, (e) => {
             callback('invalid');
@@ -87,6 +89,54 @@ io.on('connection', function(socket) {
         if (user && user.id != socket.id) {
             io.to(user.id).emit('newMessage', {from, to, message});
         }
+    });
+
+    socket.on('newArrow', () => {
+        User.findOneAndUpdate({
+            mobilePhone: socket.mobilePhone
+        }, {$inc: {arrows: 1}}).then((user) => {}).catch((e) => {
+            console.log(e);
+        });
+    });
+
+    socket.on('newPlaytime', () => {
+        User.findOneAndUpdate({
+            mobilePhone: socket.mobilePhone
+        }, {$inc: {playTime: 1}}).then((user) => {}).catch((e) => {
+            console.log(e);
+        });
+    });
+
+    socket.on('newWin', () => {
+        User.findOneAndUpdate({
+            mobilePhone: socket.mobilePhone
+        }, {$inc: {wins: 1}}).then((user) => {}).catch((e) => {
+            console.log(e);
+        });
+    });
+
+    socket.on('newDefeat', () => {
+        User.findOneAndUpdate({
+            mobilePhone: socket.mobilePhone
+        }, {$inc: {defeats: 1}}).then((user) => {}).catch((e) => {
+            console.log(e);
+        });
+    });
+
+    socket.on('newDuel', () => {
+        User.findOneAndUpdate({
+            mobilePhone: socket.mobilePhone
+        }, {$inc: {sendDuel: 1}}).then((user) => {}).catch((e) => {
+            console.log(e);
+        });
+    });
+
+    socket.on('newDropDuel', () => {
+        User.findOneAndUpdate({
+            mobilePhone: socket.mobilePhone
+        }, {$inc: {dropDuel: 1}}).then((user) => {}).catch((e) => {
+            console.log(e);
+        });
     });
 });
 
