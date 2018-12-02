@@ -1,4 +1,4 @@
-class Users {
+class UsersList {
     constructor() {
         this.users = [];
     }
@@ -19,6 +19,9 @@ class Users {
     getUser(id) {
         return this.users.filter((user) => user.id === id)[0];
     }
+    getUserByPhone(phone) {
+        return this.users.filter((user) => user.phone === phone)[0];
+    }
     getUserList() {
         var phonesArray = this.users.map((user) => user.phone);
 
@@ -26,4 +29,4 @@ class Users {
     }
 }
 
-module.exports = {Users};
+module.exports = {UsersList};

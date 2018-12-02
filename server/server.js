@@ -10,13 +10,13 @@ var io = require('socket.io')(http);
 var mongoose = require('./db/mongoose');
 var {User} = require('./models/user');
 var {Invite} = require('./models/invite');
-const {Users} = require('./utils/users');
+const {UsersList} = require('./utils/users');
 
 const port = process.env.PORT || 3000;
 
 const publicPath = path.join(__dirname, '../public');
 
-var users = new Users();
+var usersList = new UsersList();
 
 app.use(express.static(publicPath));
 
@@ -25,8 +25,8 @@ io.on('connection', function(socket) {
 
     socket.on('disconnect', () => {
         console.log('User disconnected');
-        users.removeUser(socket.id);
-        io.emit('updateUserList', users.getUserList());
+        usersList.removeUser(socket.id);
+        io.emit('updateUserList', usersList.getUserList());
     });
 
     socket.on('join', (params, callback) => {
@@ -38,20 +38,22 @@ io.on('connection', function(socket) {
                     callback('ok');
                 }, (e) => {
                     callback('invalid');
+                    console.log(e);
                 });
             } else {
                 callback('ok');
             }
         }, (e) => {
             callback('invalid');
+            //console.log(e);
         });
 
         socket.mobilePhone = params.mobilePhone;
 
-        users.removeUser(socket.id);
-        users.addUser(socket.id, params.mobilePhone);
+        usersList.removeUser(socket.id);
+        usersList.addUser(socket.id, params.mobilePhone);
 
-        io.emit('updateUserList', users.getUserList());
+        io.emit('updateUserList', usersList.getUserList());
 
         Invite.find({from: socket.mobilePhone}).then((invites) => {
             socket.emit('updateInvitesList', invites);
@@ -79,6 +81,12 @@ io.on('connection', function(socket) {
         var message = params.message;
 
         socket.emit('newMessage', {from, to, message});
+
+        var user = usersList.getUserByPhone(to);
+
+        if (user && user.id != socket.id) {
+            io.to(user.id).emit('newMessage', {from, to, message});
+        }
     });
 });
 
