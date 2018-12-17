@@ -10,6 +10,8 @@ var io = require('socket.io')(http);
 var mongoose = require('./db/mongoose');
 var {User} = require('./models/user');
 var {Invite} = require('./models/invite');
+var {Message} = require('./models/message');
+
 const {UsersList} = require('./utils/users');
 
 const port = process.env.PORT || 3000;
@@ -30,26 +32,39 @@ io.on('connection', function(socket) {
     });
 
     socket.on('join', (params, callback) => {
+        params.mobilePhone = params.mobilePhone.replace(' ', '');
+        params.mobilePhone = params.mobilePhone.replace('-', '');
+
+        if (params.mobilePhone.length < 10) {
+            return callback('invalid');
+        }
+
+        params.mobilePhone = params.mobilePhone.substr(params.mobilePhone.length - 10, 10);
+
         User.findOne(params).then((user) => {
             if (!user) {
                 var user = new User(params);
 
                 user.save().then(() => {                
                     callback('ok');
+                    HandleJoin(params, socket);
                 }, (e) => {
-                    callback('invalid');
                     console.log(e);
+                    callback('invalid');
                 });
             } else {
                 callback('ok');
+                HandleJoin(params, socket);
 
                 socket.emit('updateStat', user);
             }
         }, (e) => {
+            console.log(e);
             callback('invalid');
-            //console.log(e);
-        });
+        });        
+    });
 
+    function HandleJoin(params, socket) {
         socket.mobilePhone = params.mobilePhone;
 
         usersList.removeUser(socket.id);
@@ -60,7 +75,13 @@ io.on('connection', function(socket) {
         Invite.find({from: socket.mobilePhone}).then((invites) => {
             socket.emit('updateInvitesList', invites);
         });
-    });
+
+        Message.find({from: socket.mobilePhone}).then((messages) => {
+            messages.forEach((message) => {
+                socket.emit('newMessage', message);
+            });
+        });
+    }
 
     socket.on('invite', (params, callback) => {
         var to = params.friendPhone;
@@ -81,14 +102,39 @@ io.on('connection', function(socket) {
         var from = socket.mobilePhone;
         var to = params.phone;
         var message = params.message;
+        var createdAt = new Date().getTime();
 
-        socket.emit('newMessage', {from, to, message});
+        socket.emit('newMessage', {from, to, text:message, createdAt});
 
         var user = usersList.getUserByPhone(to);
 
         if (user && user.id != socket.id) {
-            io.to(user.id).emit('newMessage', {from, to, message});
+            io.to(user.id).emit('newMessage', {from, to, text:message, createdAt});
         }
+
+        var messageData = new Message({from, to, text:message, createdAt});
+
+        messageData.save().then().catch((e) => {
+            console.log('Message is not saved', e);
+        });
+    });
+
+    socket.on('checkContacts', (params, callback) => {
+        var phones = params.phones;
+
+        User.find({mobilePhone:{$in:phones}}).then((users) => {
+            var gamers = [];
+
+            users.forEach((user) => {
+                gamers.push(user.mobilePhone);
+                gamers.push(user.mobilePhone);
+                gamers.push(user.mobilePhone);
+            });
+
+            callback(gamers);
+        }).catch((e) => {
+            console.log(e);
+        });
     });
 
     socket.on('newArrow', () => {
