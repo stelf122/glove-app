@@ -11,6 +11,7 @@ var mongoose = require('./db/mongoose');
 var {User} = require('./models/user');
 var {Invite} = require('./models/invite');
 var {Message} = require('./models/message');
+var {DuelMessage} = require('./models/duelMessage');
 
 const {UsersList} = require('./utils/users');
 
@@ -76,9 +77,15 @@ io.on('connection', function(socket) {
             socket.emit('updateInvitesList', invites);
         });
 
-        Message.find({from: socket.mobilePhone}).then((messages) => {
+        Message.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]}).then((messages) => {
             messages.forEach((message) => {
                 socket.emit('newMessage', message);
+            });
+        });
+
+        DuelMessage.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]}).then((messages) => {
+            messages.forEach((message) => {
+                socket.emit('newDuelMessage', message);
             });
         });
     }
@@ -104,20 +111,40 @@ io.on('connection', function(socket) {
         var message = params.message;
         var createdAt = new Date().getTime();
 
-        socket.emit('newMessage', {from, to, text:message, createdAt});
+        var messageData = new Message({from, to, text:message, createdAt});
+
+        messageData.save().then((message) => {
+            socket.emit('newMessage', message);
+
+            var user = usersList.getUserByPhone(to);
+
+            if (user && user.id != socket.id) {
+                io.to(user.id).emit('newMessage', message);
+            }
+        }).catch((e) => {
+            console.log('Message is not saved', e);
+        });
+    });
+
+    socket.on('newDuelMessage', (params, callback) => {
+        var from = socket.mobilePhone;
+        var to = params.phone;
+        var createdAt = new Date().getTime();
+
+        socket.emit('newDuelMessage', {from, to, createdAt});
 
         var user = usersList.getUserByPhone(to);
 
         if (user && user.id != socket.id) {
-            io.to(user.id).emit('newMessage', {from, to, text:message, createdAt});
+            io.to(user.id).emit('newDuelMessage', {from, to, createdAt});
         }
 
-        var messageData = new Message({from, to, text:message, createdAt});
+        var messageData = new DuelMessage({from, to, createdAt});
 
         messageData.save().then().catch((e) => {
             console.log('Message is not saved', e);
         });
-    });
+    })
 
     socket.on('checkContacts', (params, callback) => {
         var phones = params.phones;
