@@ -8,6 +8,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 var mongoose = require('./db/mongoose');
+var {ObjectID} = require('mongodb');
 var {User} = require('./models/user');
 var {Invite} = require('./models/invite');
 var {Message} = require('./models/message');
@@ -131,20 +132,84 @@ io.on('connection', function(socket) {
         var to = params.phone;
         var createdAt = new Date().getTime();
 
-        socket.emit('newDuelMessage', {from, to, createdAt});
-
-        var user = usersList.getUserByPhone(to);
-
-        if (user && user.id != socket.id) {
-            io.to(user.id).emit('newDuelMessage', {from, to, createdAt});
-        }
-
         var messageData = new DuelMessage({from, to, createdAt});
 
-        messageData.save().then().catch((e) => {
+        messageData.save().then((duelMessage) => {
+            socket.emit('newDuelMessage', duelMessage);
+
+            var user = usersList.getUserByPhone(to);
+
+            if (user && user.id != socket.id) {
+                io.to(user.id).emit('newDuelMessage', duelMessage);
+            }
+        }).catch((e) => {
             console.log('Message is not saved', e);
         });
-    })
+    });
+
+    socket.on('acceptDuel', (params, callback) => {
+        var id = params.id;
+
+        if (!ObjectID.isValid(id)) {
+            return callback('invalid_id');
+        }
+
+        DuelMessage.findById(id).then((duel) => {
+            var userOne = usersList.getUserByPhone(duel.from);
+            var userTwo = usersList.getUserByPhone(duel.to);
+
+            if (!userOne || !userTwo) {
+                return callback('user_offline')
+            }
+
+            DuelMessage.findByIdAndUpdate(id, {$set: {status: 'accepted'}}, {new: true}).then((duelMessage) => {
+                if (!duelMessage) {
+                    return callback('update_error');
+                }
+
+                io.to(userOne.id).emit('updateMessage', duelMessage);
+                io.to(userTwo.id).emit('updateMessage', duelMessage);
+
+                io.to(userOne.id).emit('startDuel', {_id: id});
+                io.to(userTwo.id).emit('startDuel', {_id: id});
+
+                return callback('ok');
+            }).catch((e) => {
+                return console.log(e);
+            });
+        }).catch((e) => {
+            return console.log(e);
+        });
+    });
+
+    socket.on('rejectDuel', (params, callback) => {
+        var id = params.id;
+
+        if (!ObjectID.isValid(id)) {
+            return callback('invalid_id');
+        }
+
+        DuelMessage.findByIdAndUpdate(id, {$set: {status: 'rejected'}}, {new: true}).then((duelMessage) => {
+            if (!duelMessage) {
+                return callback('update_error');
+            }
+
+            var userOne = usersList.getUserByPhone(duelMessage.from);
+            var userTwo = usersList.getUserByPhone(duelMessage.to);
+
+            if (userOne) {
+                io.to(userOne.id).emit('updateMessage', duelMessage);
+            }
+
+            if (userTwo) {
+                io.to(userTwo.id).emit('updateMessage', duelMessage);
+            }
+
+            return callback('ok');
+        }).catch((e) => {
+            return console.log(e);
+        });
+    });
 
     socket.on('checkContacts', (params, callback) => {
         var phones = params.phones;
@@ -208,6 +273,22 @@ io.on('connection', function(socket) {
         User.findOneAndUpdate({
             mobilePhone: socket.mobilePhone
         }, {$inc: {dropDuel: 1}}).then((user) => {}).catch((e) => {
+            console.log(e);
+        });
+    });
+
+    socket.on('newRound', () => {
+        User.findOneAndUpdate({
+            mobilePhone: socket.mobilePhone
+        }, {$inc: {rounds: 1}}).then((user) => {}).catch((e) => {
+            console.log(e);
+        });
+    });
+
+    socket.on('newGame', () => {
+        User.findOneAndUpdate({
+            mobilePhone: socket.mobilePhone
+        }, {$inc: {games: 1}}).then((user) => {}).catch((e) => {
             console.log(e);
         });
     });

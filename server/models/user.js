@@ -42,6 +42,16 @@ var UserSchema = new mongoose.Schema({
         required: false,
         default: 0,
         type: Number
+    },
+    rounds: {
+        required: false,
+        default: 0,
+        type: Number
+    },
+    games: {
+        required: false,
+        default: 0,
+        type: Number
     }
 });
 
