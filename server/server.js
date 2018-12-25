@@ -170,8 +170,19 @@ io.on('connection', function(socket) {
                 io.to(userOne.id).emit('updateMessage', duelMessage);
                 io.to(userTwo.id).emit('updateMessage', duelMessage);
 
-                io.to(userOne.id).emit('startDuel', {_id: id});
-                io.to(userTwo.id).emit('startDuel', {_id: id});
+                User.findOne({mobilePhone: userOne.phone}).then((user) => {
+                    io.to(userTwo.id).emit('startDuel', {
+                        _id: id,
+                        opponentStats: {wins: user.wins, defeats: user.defeats}
+                    });
+                });
+
+                User.findOne({mobilePhone: userTwo.phone}).then((user) => {
+                    io.to(userOne.id).emit('startDuel', {
+                        _id: id,
+                        opponentStats: {wins: user.wins, defeats: user.defeats}
+                    });
+                });
 
                 return callback('ok');
             }).catch((e) => {
