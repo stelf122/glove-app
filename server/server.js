@@ -86,7 +86,10 @@ io.on('connection', function(socket) {
 
         DuelMessage.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]}).then((messages) => {
             messages.forEach((message) => {
-                socket.emit('newDuelMessage', message);
+                socket.emit('newDuelMessage', {
+                    message: message,
+                    notify: false
+                });
             });
         });
     }
@@ -135,12 +138,18 @@ io.on('connection', function(socket) {
         var messageData = new DuelMessage({from, to, createdAt});
 
         messageData.save().then((duelMessage) => {
-            socket.emit('newDuelMessage', duelMessage);
+            socket.emit('newDuelMessage', {
+                message: duelMessage,
+                notify: false
+            });
 
             var user = usersList.getUserByPhone(to);
 
             if (user && user.id != socket.id) {
-                io.to(user.id).emit('newDuelMessage', duelMessage);
+                io.to(user.id).emit('newDuelMessage', {
+                    message: duelMessage,
+                    notify: true
+                });
             }
         }).catch((e) => {
             console.log('Message is not saved', e);
