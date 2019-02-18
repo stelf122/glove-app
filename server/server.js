@@ -66,7 +66,7 @@ io.on('connection', function(socket) {
         });        
     });
 
-    function HandleJoin(params, socket) {
+    async function HandleJoin(params, socket) {
         socket.mobilePhone = params.mobilePhone;
 
         usersList.removeUser(socket.id);
@@ -78,16 +78,13 @@ io.on('connection', function(socket) {
             socket.emit('updateInvitesList', invites);
         });
 
-        Message.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]}).then((messages) => {
-            socket.emit('newMessage', messages);
-        });
+        var messages = await Message.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]});
+        var duelMessages = await DuelMessage.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]});
 
-        DuelMessage.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]}).then((messages) => {
-            socket.emit('newDuelMessage', {
-                message: messages,
-                notify: false
-            });
-        });
+        var allMessages = messages.concat(duelMessages);
+        var sortedMessages = allMessages.sort((a,b) => (a.createdAt > b.createdAt) ? 1 : ((b.createdAt > a.createdAt) ? -1 : 0));
+
+        socket.emit('updateMessages', sortedMessages);
     }
 
     socket.on('invite', (params, callback) => {
@@ -114,12 +111,12 @@ io.on('connection', function(socket) {
         var messageData = new Message({from, to, text:message, createdAt});
 
         messageData.save().then((message) => {
-            socket.emit('newMessage', [message]);
+            socket.emit('newMessage', message);
 
             var user = usersList.getUserByPhone(to);
 
             if (user && user.id != socket.id) {
-                io.to(user.id).emit('newMessage', [message]);
+                io.to(user.id).emit('newMessage', message);
             }
         }).catch((e) => {
             console.log('Message is not saved', e);
@@ -135,7 +132,7 @@ io.on('connection', function(socket) {
 
         messageData.save().then((duelMessage) => {
             socket.emit('newDuelMessage', {
-                message: [duelMessage],
+                message: duelMessage,
                 notify: false
             });
 
@@ -143,7 +140,7 @@ io.on('connection', function(socket) {
 
             if (user && user.id != socket.id) {
                 io.to(user.id).emit('newDuelMessage', {
-                    message: [duelMessage],
+                    message: duelMessage,
                     notify: true
                 });
             }
