@@ -79,17 +79,13 @@ io.on('connection', function(socket) {
         });
 
         Message.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]}).then((messages) => {
-            messages.forEach((message) => {
-                socket.emit('newMessage', message);
-            });
+            socket.emit('newMessage', messages);
         });
 
         DuelMessage.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]}).then((messages) => {
-            messages.forEach((message) => {
-                socket.emit('newDuelMessage', {
-                    message: message,
-                    notify: false
-                });
+            socket.emit('newDuelMessage', {
+                message: messages,
+                notify: false
             });
         });
     }
@@ -118,12 +114,12 @@ io.on('connection', function(socket) {
         var messageData = new Message({from, to, text:message, createdAt});
 
         messageData.save().then((message) => {
-            socket.emit('newMessage', message);
+            socket.emit('newMessage', [message]);
 
             var user = usersList.getUserByPhone(to);
 
             if (user && user.id != socket.id) {
-                io.to(user.id).emit('newMessage', message);
+                io.to(user.id).emit('newMessage', [message]);
             }
         }).catch((e) => {
             console.log('Message is not saved', e);
@@ -139,7 +135,7 @@ io.on('connection', function(socket) {
 
         messageData.save().then((duelMessage) => {
             socket.emit('newDuelMessage', {
-                message: duelMessage,
+                message: [duelMessage],
                 notify: false
             });
 
@@ -147,7 +143,7 @@ io.on('connection', function(socket) {
 
             if (user && user.id != socket.id) {
                 io.to(user.id).emit('newDuelMessage', {
-                    message: duelMessage,
+                    message: [duelMessage],
                     notify: true
                 });
             }
