@@ -66,7 +66,7 @@ io.on('connection', function(socket) {
         });        
     });
 
-    async function HandleJoin(params, socket) {
+    async function HandleJoin(params, socket) { 
         socket.mobilePhone = params.mobilePhone;
 
         usersList.removeUser(socket.id);
