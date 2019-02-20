@@ -84,7 +84,10 @@ io.on('connection', function(socket) {
         var allMessages = messages.concat(duelMessages);
         var sortedMessages = allMessages.sort((a,b) => (a.createdAt > b.createdAt) ? 1 : ((b.createdAt > a.createdAt) ? -1 : 0));
 
+        //sortedMessages = sortedMessages.splice(sortedMessages.length - 5, 5);
         socket.emit('updateMessages', sortedMessages);
+
+        console.log('Messages count: ' + sortedMessages.length + ' ' + socket.mobilePhone);
     }
 
     socket.on('invite', (params, callback) => {
