@@ -78,6 +78,10 @@ io.on('connection', function(socket) {
             socket.emit('updateInvitesList', invites);
         });
 
+        await SendMessages(socket);
+    }
+
+    async function SendMessages(socket) {
         var messages = await Message.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]});
         var duelMessages = await DuelMessage.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]});
 
@@ -86,9 +90,11 @@ io.on('connection', function(socket) {
 
         //sortedMessages = sortedMessages.splice(sortedMessages.length - 5, 5);
         socket.emit('updateMessages', sortedMessages);
-
-        console.log('Messages count: ' + sortedMessages.length + ' ' + socket.mobilePhone);
     }
+
+    socket.on('resendMessages', async(params, callback) => {
+        await SendMessages(socket);
+    });
 
     socket.on('invite', (params, callback) => {
         var to = params.friendPhone;
