@@ -43,9 +43,9 @@ io.on('connection', function(socket) {
 
         params.mobilePhone = params.mobilePhone.substr(params.mobilePhone.length - 10, 10);
 
-        User.findOne(params).then((user) => {
+        User.findOne({mobilePhone: params.mobilePhone}).then((user) => {
             if (!user) {
-                var user = new User(params);
+                var user = new User({mobilePhone: params.mobilePhone});
 
                 user.save().then(() => {                
                     callback('ok');
@@ -78,12 +78,20 @@ io.on('connection', function(socket) {
             socket.emit('updateInvitesList', invites);
         });
 
-        await SendMessages(socket);
+        await SendMessages(socket, params.lastMessage, params.lastDuelMessage);
     }
 
-    async function SendMessages(socket) {
-        var messages = await Message.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]});
-        var duelMessages = await DuelMessage.find({$or: [{from: socket.mobilePhone}, {to: socket.mobilePhone}]});
+    async function SendMessages(socket, lastMessage, lastDuelMessage) {
+        console.log('LastMessage: ', lastMessage);
+        var messages = await Message.find({$or: [
+            {from: socket.mobilePhone, _id: { $gt: new ObjectID(lastMessage) }}, 
+            {to: socket.mobilePhone, _id: { $gt: new ObjectID(lastMessage) }}
+        ]});
+
+        var duelMessages = await DuelMessage.find({$or: [
+            {from: socket.mobilePhone, _id: { $gt: new ObjectID(lastDuelMessage) }}, 
+            {to: socket.mobilePhone, _id: { $gt: new ObjectID(lastDuelMessage) }}
+        ]});
 
         var allMessages = messages.concat(duelMessages);
         var sortedMessages = allMessages.sort((a,b) => (a.createdAt > b.createdAt) ? 1 : ((b.createdAt > a.createdAt) ? -1 : 0));
