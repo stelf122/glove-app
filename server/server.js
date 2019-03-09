@@ -15,6 +15,7 @@ var {Message} = require('./models/message');
 var {DuelMessage} = require('./models/duelMessage');
 
 const {UsersList} = require('./utils/users');
+const {SendNotification} = require('./utils/notifications');
 
 const port = process.env.PORT || 3000;
 
@@ -43,9 +44,12 @@ io.on('connection', function(socket) {
 
         params.mobilePhone = params.mobilePhone.substr(params.mobilePhone.length - 10, 10);
 
-        User.findOne({mobilePhone: params.mobilePhone}).then((user) => {
+        User.findOneAndUpdate({mobilePhone: params.mobilePhone}, {$set: {registrationToken: params.registrationToken}}, {new: true}).then((user) => {
             if (!user) {
-                var user = new User({mobilePhone: params.mobilePhone});
+                var user = new User({
+                    mobilePhone: params.mobilePhone,
+                    registrationToken: params.registrationToken
+                });
 
                 user.save().then(() => {                
                     callback('ok');
@@ -63,7 +67,7 @@ io.on('connection', function(socket) {
         }, (e) => {
             console.log(e);
             callback('invalid');
-        });        
+        });
     });
 
     async function HandleJoin(params, socket) { 
@@ -100,9 +104,9 @@ io.on('connection', function(socket) {
         socket.emit('updateMessages', sortedMessages);
     }
 
-    socket.on('resendMessages', async(params, callback) => {
-        await SendMessages(socket);
-    });
+    // socket.on('resendMessages', async(params, callback) => {
+    //     await SendMessages(socket);
+    // });
 
     socket.on('invite', (params, callback) => {
         var to = params.friendPhone;
@@ -161,6 +165,14 @@ io.on('connection', function(socket) {
                     notify: true
                 });
             }
+
+            User.findOne({mobilePhone: to}).then((user) => {
+                if (!user || !user.registrationToken) {
+                    console.log('User not found or registration token is not provided', user);
+                } else {
+                    SendNotification(user.registrationToken);
+                }
+            });
         }).catch((e) => {
             console.log('Message is not saved', e);
         });

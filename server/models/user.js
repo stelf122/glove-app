@@ -13,6 +13,10 @@ var UserSchema = new mongoose.Schema({
             message: '{VALUE} is not a valid value'
         }
     },
+    registrationToken: {
+        required: false,
+        type: String
+    },
     arrows: {
         required: false,
         default: 0,
