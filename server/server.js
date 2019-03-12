@@ -101,7 +101,10 @@ io.on('connection', function(socket) {
         var sortedMessages = allMessages.sort((a,b) => (a.createdAt > b.createdAt) ? 1 : ((b.createdAt > a.createdAt) ? -1 : 0));
 
         //sortedMessages = sortedMessages.splice(sortedMessages.length - 5, 5);
-        socket.emit('updateMessages', sortedMessages);
+        socket.emit('updateMessages', {
+            serverTime: new Date().getTime(),
+            messages: sortedMessages
+        });
     }
 
     // socket.on('resendMessages', async(params, callback) => {
@@ -152,7 +155,10 @@ io.on('connection', function(socket) {
         var messageData = new DuelMessage({from, to, createdAt});
 
         messageData.save().then((duelMessage) => {
+            duelMessage.currentTime = new Date().getTime();
+
             socket.emit('newDuelMessage', {
+                serverTime: new Date().getTime(),
                 message: duelMessage,
                 notify: false
             });
@@ -161,6 +167,7 @@ io.on('connection', function(socket) {
 
             if (user && user.id != socket.id) {
                 io.to(user.id).emit('newDuelMessage', {
+                    serverTime: new Date().getTime(),
                     message: duelMessage,
                     notify: true
                 });
