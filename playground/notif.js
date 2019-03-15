@@ -17,22 +17,25 @@ const settings = {
  
 const push = new PushNotifications(settings);
 
-const registrationIds = 'dgUKzZDqfro:APA91bEDj4MUsM_v5gn5YwWraQfakVjOOXLrZEIJ5mw9i-DLS2zuaHXnzQ_5CZUoehJkkXsbRrDlwu8vxag_xr5fO1Qv8xHo4qzYpN6ewbQDnyUyTvo8A957n0CxyyknuBzYVo-fBluU';
+const registrationIds = 'fMD1YLKGnVM:APA91bHQisTC8PaNbAlgntbSU__2jTjYKI4eUEutm9K-s0nfcrj3ysdXz3puNfl6DoKKi07SitAY-GUH3Gv0Da7jO5emernraxcDTIvcyXHnrnHZiu3mRVB-RTchGTRfMTc9mV5a_bjj';
 
 const data = {
     title: 'Новая дуэль', // REQUIRED for Android
     body: 'Вы были вызваны на дуэль!',
-    topic: 'дуэль', // REQUIRED for iOS (apn and gcm)
-    /* The topic of the notification. When using token-based authentication, specify the bundle ID of the app. 
-     * When using certificate-based authentication, the topic is usually your app's bundle ID.
-     * More details can be found under https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/sending_notification_requests_to_apns
-     */
+    data:
+    {
+        title: 'Test',
+        body: 'Fcm' 
+    }, 
+    click_action: 'OPEN_ACTIVITY_1',
+    //topic: 'дуэль', // REQUIRED for iOS (apn and gcm)
+    //sound: 'default',
     priority: 'high', // gcm, apn. Supported values are 'high' or 'normal' (gcm). Will be translated to 10 and 5 for apn. Defaults to 'high' 
     // mdm: '', // apn and gcm for ios. Use this to send Mobile Device Management commands. 
     // https://developer.apple.com/library/content/documentation/Miscellaneous/Reference/MobileDeviceManagementProtocolRef/3-MDM_Protocol/MDM_Protocol.html
-    expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // seconds
-    timeToLive: 28 * 86400, // if both expiry and timeToLive are given, expiry will take precedency
-};
+    //expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // seconds
+    //timeToLive: 28 * 86400, // if both expiry and timeToLive are given, expiry will take precedency
+}; 
 
 push.send(registrationIds, data)
     .then((results) => { console.log(results); console.log(results[0].message); })
