@@ -23,6 +23,7 @@ const data = {
     title: 'Новая дуэль', // REQUIRED for Android
     body: 'Вы были вызваны на дуэль!',
     topic: 'дуэль', // REQUIRED for iOS (apn and gcm)
+    sound: 'default',
     /* The topic of the notification. When using token-based authentication, specify the bundle ID of the app. 
      * When using certificate-based authentication, the topic is usually your app's bundle ID.
      * More details can be found under https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/sending_notification_requests_to_apns
