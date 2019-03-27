@@ -17,7 +17,7 @@ const settings = {
  
 const push = new PushNotifications(settings);
 
-const registrationIds = 'fMD1YLKGnVM:APA91bHQisTC8PaNbAlgntbSU__2jTjYKI4eUEutm9K-s0nfcrj3ysdXz3puNfl6DoKKi07SitAY-GUH3Gv0Da7jO5emernraxcDTIvcyXHnrnHZiu3mRVB-RTchGTRfMTc9mV5a_bjj';
+const registrationIds = 'cki2LEvNITk:APA91bEJrqTM3X4SteFYx4vMigMeGlQw9ervpNBAJi-XoRIvVsZUK4Z4ya4QpmPhTjI9nXdOYYKH6Tqpz3p5A0HFO3j1Tf9OXjkvDJE7WMendnvI2oTVPp0XrC8I6zXC-xXloIFBmJtf';
 
 const data = {
     title: 'Новая дуэль', // REQUIRED for Android
@@ -29,7 +29,7 @@ const data = {
     }, 
     click_action: 'OPEN_ACTIVITY_1',
     //topic: 'дуэль', // REQUIRED for iOS (apn and gcm)
-    //sound: 'default',
+    sound: 'ping.aiff',
     priority: 'high', // gcm, apn. Supported values are 'high' or 'normal' (gcm). Will be translated to 10 and 5 for apn. Defaults to 'high' 
     // mdm: '', // apn and gcm for ios. Use this to send Mobile Device Management commands. 
     // https://developer.apple.com/library/content/documentation/Miscellaneous/Reference/MobileDeviceManagementProtocolRef/3-MDM_Protocol/MDM_Protocol.html
