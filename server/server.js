@@ -142,6 +142,14 @@ io.on('connection', function(socket) {
             if (user && user.id != socket.id) {
                 io.to(user.id).emit('newMessage', message);
             }
+
+            User.findOne({mobilePhone: to}).then((user) => {
+                if (!user || !user.registrationToken) {
+                    console.log('User not found or registration token is not provided', user);
+                } else {
+                    SendNotification(user.registrationToken, 'Новое сообщение', message);
+                }
+            });
         }).catch((e) => {
             console.log('Message is not saved', e);
         });
@@ -177,7 +185,7 @@ io.on('connection', function(socket) {
                 if (!user || !user.registrationToken) {
                     console.log('User not found or registration token is not provided', user);
                 } else {
-                    SendNotification(user.registrationToken);
+                    SendNotification(user.registrationToken, 'Новая дуэль', 'Вы были вызваны на дуэль!');
                 }
             });
         }).catch((e) => {
