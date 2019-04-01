@@ -147,7 +147,7 @@ io.on('connection', function(socket) {
                 if (!user || !user.registrationToken) {
                     console.log('User not found or registration token is not provided', user);
                 } else {
-                    SendNotification(user.registrationToken, 'Новое сообщение', message);
+                    SendNotification(user.registrationToken, 'Новое сообщение', message.text);
                 }
             });
         }).catch((e) => {
