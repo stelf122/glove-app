@@ -1,18 +1,18 @@
 const PushNotifications = require('node-pushnotifications');
- 
+
 const settings = {
     gcm: {
         id: 'AAAAgrBqiRk:APA91bGNjhCWlPpKqO2kqLVPcdL4UXg_2DIXPnHFROvEGD-67IiIIZEj26MS8oaIg_ZUd70H1CEVhZp_X9JcBWpSuctxlF2nH3hxO9b-qbyq_ljYXhmYzt1oyBv7ZkQlNH7a4JOn8dj3',
         phonegap: false, // phonegap compatibility mode, see below (defaults to false)
     },
-    // apn: {
-    //     token: {
-    //         key: './certs/key.p8', // optionally: fs.readFileSync('./certs/key.p8')
-    //         keyId: 'ABCD',
-    //         teamId: 'EFGH',
-    //     },
-    //     production: false // true for APN production environment, false for APN sandbox environment,
-    // },
+    apn: {
+        token: {
+            key: '../../certs/AuthKey_586R7SY5AG.p8', // optionally: fs.readFileSync('./certs/key.p8')
+            keyId: '586R7SY5AG',
+            teamId: 'YF6W7BV25R',
+        },
+        production: false // true for APN production environment, false for APN sandbox environment,
+    },
 };
 
 const push = new PushNotifications(settings);
