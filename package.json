@@ -18,7 +18,7 @@
     "mongoose": "^5.3.14",
     "node-gcm": "^1.0.2",
     "node-pushnotifications": "^1.1.8",
-    "socket.io": "^2.2.0",
+    "socket.io": "^2.5.0",
     "validator": "^10.9.0"
   }
 }
